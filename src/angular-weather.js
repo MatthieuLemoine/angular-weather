@@ -4,11 +4,6 @@ var extend = angular.extend;
 
 angular.module('angular-weather', [])
   .constant('openweatherEndpoint', 'http://api.openweathermap.org/data/2.5/weather')
-  .constant('Config', {
-    openweather: {
-      apikey: ''
-    }
-  })
   .directive('angularWeather', function () {
     return {
       restrict: 'EA',
@@ -17,7 +12,7 @@ angular.module('angular-weather', [])
         var vm = this;
 
         // Request the weather data.
-        weather.get(vm.city).then(function(response) {
+        weather.get(vm.city,vm.apikey).then(function(response) {
           vm.data = response;
           vm.data.iconClass = weatherIcons[response.icon];
         });
@@ -26,11 +21,12 @@ angular.module('angular-weather', [])
       bindToController: true,
       // Isolate scope.
       scope: {
-        city: '@'
+        city: '@',
+        apikey: '='
       }
     };
   })
-  .service('weather', function ($q, $http, $interval, openweatherEndpoint, weatherIcons, Config) {
+  .service('weather', function ($q, $http, $interval, openweatherEndpoint, weatherIcons) {
     var weather = this;
 
     // interval id, keep it to handle the auto refresh
@@ -51,6 +47,8 @@ angular.module('angular-weather', [])
      *
      * @param city - string
      *   The city name. Ex: Houston
+     * @param apikey - string
+     *   The OpenWeatherMap Api Key
      * @param _options - object
      *   The options to handle.
      *    refresh: activate to get new weather information in interval
@@ -59,10 +57,10 @@ angular.module('angular-weather', [])
      *
      * @returns {Promise}
      */
-    function get(city, _options) {
+    function get(city,apikey, _options) {
       extend(options, _options, {city: city});
 
-      getWeather = $q.when(getWeather || angular.copy(getCache()) || getWeatherFromServer(city));
+      getWeather = $q.when(getWeather || angular.copy(getCache()) || getWeatherFromServer(city,apikey));
 
       // Clear the promise cached, after resolve or reject the promise. Permit access to the cache data, when
       // the promise excecution is done (finally).
@@ -78,13 +76,13 @@ angular.module('angular-weather', [])
      *
      * @returns {$q.promise}
      */
-    function getWeatherFromServer(city) {
+    function getWeatherFromServer(city,apikey) {
       var deferred = $q.defer();
       var url = openweatherEndpoint;
       var params = {
         q: city,
         units: 'metric',
-        APPID: Config.openweather.apikey || ''
+        APPID: apikey || ''
       };
       $http({
         method: 'GET',
@@ -156,7 +154,7 @@ angular.module('angular-weather', [])
         temperature: weatherData.main.temp,
         icon: (angular.isDefined(weatherIcons[weatherData.weather[0].icon])) ? weatherData.weather[0].icon : weatherData.weather[0].id,
         description: weatherData.weather[0].description
-      }
+      };
     }
 
   })
