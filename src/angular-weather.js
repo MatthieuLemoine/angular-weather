@@ -60,7 +60,7 @@ angular.module('angular-weather', [])
     function get(city,apikey, _options) {
       extend(options, _options, {city: city});
 
-      getWeather = $q.when(getWeather || angular.copy(getCache()) || getWeatherFromServer(city,apikey));
+      getWeather = $q.when(getWeather || /* angular.copy(getCache())  || */ getWeatherFromServer(city,apikey));
 
       // Clear the promise cached, after resolve or reject the promise. Permit access to the cache data, when
       // the promise excecution is done (finally).
@@ -93,7 +93,7 @@ angular.module('angular-weather', [])
       }).success(function(data) {
         // Prepare the Weather object.
         var weatherData = prepareWeather(data);
-        setCache(weatherData);
+        //setCache(weatherData);
 
         // Start refresh automatic the weather, according the interval of time.
         options.refresh && startRefreshWeather();
@@ -110,25 +110,29 @@ angular.module('angular-weather', [])
      * @param data
      *    Collection resulted from the request.
      */
+     /*
     function setCache(data) {
       // Save cache Weather data directly to localStorage.
       localforage.setItem('aw.cache', data);
       localforage.setItem('aw.updatedAt', new Date());
     }
+    */
 
     /**
      * Return a promise with the weather data cached.
      */
+     /*
     function getCache() {
       return localforage('aw.cache');
     }
+    */
 
     /**
      * Start an interval to refresh the weather cache data with new server data.
      */
     function startRefreshWeather() {
       interval = $interval(getWeatherFromServer(options.city), options.delay);
-      localforage.setItem('aw.refreshing', true);
+      //localforage.setItem('aw.refreshing', true);
     }
 
     /**
@@ -137,7 +141,7 @@ angular.module('angular-weather', [])
     function stopRefreshWeather() {
       $interval(interval);
       interval = undefined;
-      localforage.setItem('aw.refreshing', false);
+      //localforage.setItem('aw.refreshing', false);
     }
 
     /**
